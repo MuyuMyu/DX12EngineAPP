@@ -1,0 +1,93 @@
+#################################
+# Visual Studio / VSCode
+#################################
+
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.rsuser
+*.sln.docstates
+
+#################################
+# Build Output (bin/obj)
+#################################
+
+[Bb]in/
+[Oo]bj/
+build/
+out/
+
+# Architecture-specific folders (VS defaults)
+x64/
+x86/
+ARM*/
+ARM64*/
+
+#################################
+# CMake
+#################################
+
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Local presets (user-only)
+CMakeUserPresets.json
+
+#################################
+# Shader / Compilation Output
+#################################
+
+# DX / FX Compiler intermediates
+*.pch
+*.pdb
+*.idb
+*.ipdb
+*.iobj
+*.tlog/
+
+# Compiled shader objects
+*.cso
+*.pso
+*.vs.cso
+*.ps.cso
+*.hs.cso
+*.ds.cso
+*.gs.cso
+
+# Generated headers (e.g. fxc / dxc / shader reflection)
+*.hlsl.h
+
+#################################
+# Logs / Databases
+#################################
+
+*.log
+*.VC.db
+*.opendb
+
+#################################
+# Windows Files
+#################################
+
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+#################################
+# Package / Dependencies
+#################################
+
+packages/
+.nuget/
+
+#################################
+# Temp / Backup
+#################################
+
+*.tmp
+*.bak
+*.dmp
