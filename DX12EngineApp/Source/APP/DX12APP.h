@@ -1,5 +1,5 @@
 #pragma once
-#include "../stdafx.h"
+#include <Windows.h>
 
 using namespace Microsoft;
 using namespace Microsoft::WRL;
@@ -27,9 +27,14 @@ public:
 	static void Run(HINSTANCE hins)
 	{
 		DX12APP app;
+		DX12Engine engine;
 		app.InitWindow(hins);
-		app.RenderLoop();
 
+		engine.CreateDebugDevice();
+		engine.CreateDevice();
+		engine.CreateCommandComponents();
+
+		app.RenderLoop();
 	}
 };
 

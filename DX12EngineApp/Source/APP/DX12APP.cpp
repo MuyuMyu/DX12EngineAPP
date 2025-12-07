@@ -1,3 +1,4 @@
+#include "../stdafx.h"
 #include "DX12APP.h"
 
 void DX12APP::InitWindow(HINSTANCE hins)
@@ -57,16 +58,6 @@ LRESULT DX12APP::CallBackFunc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-	case WM_LBUTTONDOWN:     // Êó±ê×ó¼ü°´ÏÂ
-	{
-		int x = GET_X_LPARAM(lParam);
-		int y = GET_Y_LPARAM(lParam);
-
-		char buf[64];
-		sprintf_s(buf, "Mouse: (%d, %d)\n", x, y);
-		OutputDebugStringA(buf);
-	}
-	break;
 
 	case WM_DESTROY:
 		PostQuitMessage(0);
