@@ -3,10 +3,9 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
-
 //窗口API导入
 #include <Windows.h>
+#include <windowsx.h>
 
 //DX12API导入
 #include <d3d12.h>
