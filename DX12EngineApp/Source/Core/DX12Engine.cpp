@@ -3,6 +3,13 @@
 
 using namespace DirectX;
 
+
+void DX12Engine::InitWindowSize(int w, int h)
+{
+	WindowWidth = w;
+	WindowHeight = h;
+}
+
 void DX12Engine::CreateDebugDevice()
 {
 	::CoInitialize(nullptr);	// 注意这里！DX12 的所有设备接口都是基于 COM 接口的，我们需要先全部初始化为 nullptr
@@ -96,6 +103,50 @@ void DX12Engine::CreateCommandComponents()
 	);
 
 	m_CommandList->Close();
+}
+
+void DX12Engine::CreateRenderTarget(HWND hwnd)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC RTVHeapDesc = {};
+	RTVHeapDesc.NumDescriptors = FrameCount;
+	RTVHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+
+	m_D3D12Device->CreateDescriptorHeap(&RTVHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
+
+	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+	swapchainDesc.BufferCount = FrameCount;
+	swapchainDesc.Width = WindowWidth;
+	swapchainDesc.Height = WindowHeight;
+	swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapchainDesc.SampleDesc.Count = 1;
+
+	ComPtr<IDXGISwapChain1> temp_SwapChain;
+
+	m_DXGIFactory->CreateSwapChainForHwnd(m_CommandQueue.Get(),
+		hwnd,
+		&swapchainDesc,
+		nullptr,
+		nullptr,
+		&temp_SwapChain
+	);
+
+	temp_SwapChain.As(&m_DXGISwapChain);
+
+	RTVHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
+
+	RTVDescriptionSize = m_D3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+	for (UINT i = 0;i < FrameCount;i++)
+	{
+		m_DXGISwapChain->GetBuffer(i, IID_PPV_ARGS(&m_RenderTarget[i]));
+
+		m_D3D12Device->CreateRenderTargetView(m_RenderTarget[i].Get(), nullptr, RTVHandle);
+
+		RTVHandle.ptr += RTVDescriptionSize;
+	}
+
 }
 
 

@@ -14,6 +14,13 @@ private:
 
 public:
 
+	HWND GetHWND()
+	{
+		return m_hwnd;
+	}
+	int GetWindowWidth() { return WindowWidth; }
+	int GetWindowHeight() { return WindowHeight; }
+
 	// ³õÊ¼»¯´°¿Ú
 	void InitWindow(HINSTANCE hins);
 
@@ -30,9 +37,11 @@ public:
 		DX12Engine engine;
 		app.InitWindow(hins);
 
+		engine.InitWindowSize(app.GetWindowWidth(), app.GetWindowHeight());
 		engine.CreateDebugDevice();
 		engine.CreateDevice();
 		engine.CreateCommandComponents();
+		engine.CreateRenderTarget(app.GetHWND());
 
 		app.RenderLoop();
 	}

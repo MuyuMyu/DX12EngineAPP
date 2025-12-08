@@ -3,10 +3,17 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+using namespace Microsoft;
 using namespace Microsoft::WRL;
 class DX12Engine
 {
 private:
+
+	int WindowWidth = 640;		// 窗口宽度
+	int WindowHeight = 480;		// 窗口高度
+
+	static const uint32_t FrameCount = 3;
+
 	//调试层
 	ComPtr<ID3D12Debug6> m_D3D12DebugDevice;
 	UINT m_DXGICreateFactoryFlag = NULL;
@@ -21,12 +28,23 @@ private:
 	ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList10> m_CommandList;
 
+	//资源与交换链
+	ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
+	ComPtr<IDXGISwapChain4> m_DXGISwapChain;
+	ComPtr<ID3D12Resource> m_RenderTarget[3];
+	D3D12_CPU_DESCRIPTOR_HANDLE RTVHandle;
+	UINT RTVDescriptionSize = 0;
+
 public:
+
+	void InitWindowSize(int w, int h);
 
 	void CreateDebugDevice();
 
 	bool CreateDevice();
 
 	void CreateCommandComponents();
+
+	void CreateRenderTarget(HWND hwnd);
 };
 

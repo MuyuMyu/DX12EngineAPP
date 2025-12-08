@@ -2,7 +2,8 @@
 #include "DX12APP.h"
 
 void DX12APP::InitWindow(HINSTANCE hins)
-{
+{;
+
 	WNDCLASS wc = {};
 	wc.hInstance = hins;
 	wc.lpfnWndProc = CallBackFunc;
