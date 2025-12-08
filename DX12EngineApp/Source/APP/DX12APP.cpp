@@ -30,6 +30,17 @@ void DX12APP::InitWindow(HINSTANCE hins)
 	ShowWindow(m_hwnd, SW_SHOW);
 }
 
+void DX12APP::InitDX12()
+{
+	engine.InitWindowSize(WindowWidth, WindowHeight);
+	engine.CreateDebugDevice();
+	engine.CreateDevice();
+	engine.CreateCommandComponents();
+	engine.CreateRenderTarget(m_hwnd);
+	engine.CreateFenceAndBarrier();
+
+}
+
 void DX12APP::RenderLoop()
 {
 	bool isExited = false;
@@ -37,6 +48,8 @@ void DX12APP::RenderLoop()
 
 	while (!isExited)
 	{
+		engine.Render();
+
 		while (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
 		{
 			// 查看消息队列是否有消息，如果有就获取。 PM_REMOVE 表示获取完消息，就立刻将该消息从消息队列中移除

@@ -47,14 +47,14 @@ bool DX12Engine::CreateDevice()
 	ComPtr<IDXGIAdapter1> m_DXGIAdapter_tem;
 	for (UINT i = 0; m_DXGIFactory->EnumAdapters1(i, m_DXGIAdapter_tem.GetAddressOf()) != ERROR_NOT_FOUND; i++)
 	{
-		DXGI_ADAPTER_DESC desc;
-		if (SUCCEEDED(m_DXGIAdapter_tem->GetDesc(&desc)))
-		{
-			std::wstring adapterName = desc.Description;
-			std::wstring msg = L"FindGPU [" + std::to_wstring(i + 1) + L"]: " + adapterName;
+		//DXGI_ADAPTER_DESC desc;
+		//if (SUCCEEDED(m_DXGIAdapter_tem->GetDesc(&desc)))
+		//{
+		//	std::wstring adapterName = desc.Description;
+		//	std::wstring msg = L"FindGPU [" + std::to_wstring(i + 1) + L"]: " + adapterName;
 
-			MessageBoxW(nullptr, msg.c_str(), L"CheckGPU", MB_OK | MB_ICONINFORMATION);
-		}
+		//	MessageBoxW(nullptr, msg.c_str(), L"CheckGPU", MB_OK | MB_ICONINFORMATION);
+		//}
 
 		m_DXGIAdapter_tem.As(&m_DXGIAdapter);
 		// 找到显卡，就创建 D3D12 设备，从高到低遍历所有功能版本，创建成功就跳出
@@ -147,6 +147,72 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 		RTVHandle.ptr += RTVDescriptionSize;
 	}
 
+}
+
+void DX12Engine::CreateFenceAndBarrier()
+{
+	RenderEvent = CreateEvent(nullptr, false, true, nullptr);
+
+	m_D3D12Device->CreateFence(0,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&m_Fence)
+	);
+
+
+
+	beg_barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	beg_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	beg_barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	end_barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	end_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	end_barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+}
+
+void DX12Engine::Render()
+{
+	RTVHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
+
+	FrameIndex = m_DXGISwapChain->GetCurrentBackBufferIndex();
+
+	RTVHandle.ptr += FrameIndex * RTVDescriptionSize;
+
+	m_CommandAllocator->Reset();
+
+	m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
+
+	beg_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
+
+	m_CommandList->ResourceBarrier(1, &beg_barrier);
+
+	// 用 RTV 句柄设置渲染目标
+	m_CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
+
+	// 清空当前渲染目标的背景为天蓝色
+	m_CommandList->ClearRenderTargetView(RTVHandle, DirectX::Colors::SkyBlue, 0, nullptr);
+
+	end_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
+
+	m_CommandList->ResourceBarrier(1, &end_barrier);
+
+	m_CommandList->Close();
+
+	// 用于传递命令用的临时 ID3D12CommandList 数组
+	ID3D12CommandList* _temp_cmdlists[] = { m_CommandList.Get() };
+
+	m_CommandQueue->ExecuteCommandLists(1, _temp_cmdlists);
+
+	m_DXGISwapChain->Present(1, NULL);
+
+	FenceValue++;
+
+	m_CommandQueue->Signal(m_Fence.Get(), FenceValue);
+
+	m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
+
+	WaitForSingleObject(RenderEvent, INFINITE);
+
+	
 }
 
 

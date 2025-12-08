@@ -34,6 +34,15 @@ private:
 	ComPtr<ID3D12Resource> m_RenderTarget[3];
 	D3D12_CPU_DESCRIPTOR_HANDLE RTVHandle;
 	UINT RTVDescriptionSize = 0;
+	UINT FrameIndex = 0;
+
+	//Œß¿∏”Î◊ ‘¥∆¡’œ
+	ComPtr<ID3D12Fence1> m_Fence;
+	UINT FenceValue = 0;
+	HANDLE RenderEvent = NULL;
+	D3D12_RESOURCE_BARRIER beg_barrier = {};
+	D3D12_RESOURCE_BARRIER end_barrier = {};
+
 
 public:
 
@@ -46,5 +55,10 @@ public:
 	void CreateCommandComponents();
 
 	void CreateRenderTarget(HWND hwnd);
+
+	void CreateFenceAndBarrier();
+
+	void Render();
+
 };
 

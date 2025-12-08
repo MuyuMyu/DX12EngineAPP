@@ -11,18 +11,21 @@ private:
 	int WindowWidth = 640;		// 窗口宽度
 	int WindowHeight = 480;		// 窗口高度
 	HWND m_hwnd;				// 窗口句柄
+	DX12Engine engine;
 
 public:
 
-	HWND GetHWND()
+	HWND GetHWND() const
 	{
 		return m_hwnd;
 	}
-	int GetWindowWidth() { return WindowWidth; }
-	int GetWindowHeight() { return WindowHeight; }
+	int GetWindowWidth() const { return WindowWidth; }
+	int GetWindowHeight() const { return WindowHeight; }
 
 	// 初始化窗口
 	void InitWindow(HINSTANCE hins);
+
+	void InitDX12();
 
 	// 渲染循环
 	void RenderLoop();
@@ -34,15 +37,9 @@ public:
 	static void Run(HINSTANCE hins)
 	{
 		DX12APP app;
-		DX12Engine engine;
+		
 		app.InitWindow(hins);
-
-		engine.InitWindowSize(app.GetWindowWidth(), app.GetWindowHeight());
-		engine.CreateDebugDevice();
-		engine.CreateDevice();
-		engine.CreateCommandComponents();
-		engine.CreateRenderTarget(app.GetHWND());
-
+		app.InitDX12();
 		app.RenderLoop();
 	}
 };
