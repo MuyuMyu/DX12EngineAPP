@@ -40,6 +40,15 @@ bool DX12Engine::CreateDevice()
 	ComPtr<IDXGIAdapter1> m_DXGIAdapter_tem;
 	for (UINT i = 0; m_DXGIFactory->EnumAdapters1(i, m_DXGIAdapter_tem.GetAddressOf()) != ERROR_NOT_FOUND; i++)
 	{
+		DXGI_ADAPTER_DESC desc;
+		if (SUCCEEDED(m_DXGIAdapter_tem->GetDesc(&desc)))
+		{
+			std::wstring adapterName = desc.Description;
+			std::wstring msg = L"FindGPU [" + std::to_wstring(i + 1) + L"]: " + adapterName;
+
+			MessageBoxW(nullptr, msg.c_str(), L"CheckGPU", MB_OK | MB_ICONINFORMATION);
+		}
+
 		m_DXGIAdapter_tem.As(&m_DXGIAdapter);
 		// 找到显卡，就创建 D3D12 设备，从高到低遍历所有功能版本，创建成功就跳出
 		for (const auto& level : dx12SupportLevel)
@@ -47,7 +56,6 @@ bool DX12Engine::CreateDevice()
 			// 创建 D3D12 核心层设备，创建成功就返回 true
 			if (SUCCEEDED(D3D12CreateDevice(m_DXGIAdapter.Get(), level, IID_PPV_ARGS(&m_D3D12Device))))
 			{
-
 				return true;
 			}
 		}
