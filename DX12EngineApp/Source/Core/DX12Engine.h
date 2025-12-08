@@ -1,6 +1,7 @@
 #pragma once
 #include <wrl.h>
 #include <d3d12.h>
+#include <dxgi1_6.h>
 
 using namespace Microsoft::WRL;
 class DX12Engine
