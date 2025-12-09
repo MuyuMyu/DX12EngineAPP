@@ -43,6 +43,9 @@ private:
 	D3D12_RESOURCE_BARRIER beg_barrier = {};
 	D3D12_RESOURCE_BARRIER end_barrier = {};
 
+public:
+
+	HANDLE GetRenderEvent() const { return RenderEvent; }
 
 public:
 

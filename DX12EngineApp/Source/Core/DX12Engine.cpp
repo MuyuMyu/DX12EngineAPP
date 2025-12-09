@@ -210,8 +210,6 @@ void DX12Engine::Render()
 
 	m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
 
-	WaitForSingleObject(RenderEvent, INFINITE);
-
 	
 }
 
