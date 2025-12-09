@@ -29,7 +29,7 @@
     <ClInclude Include="Source\stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Source\Shaders\shader.hlsl">
+    <None Include="Assets\Shaders\shader.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
