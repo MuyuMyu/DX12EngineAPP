@@ -2,6 +2,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include "./Render/RenderPipeline.h"
 
 using namespace Microsoft;
 using namespace Microsoft::WRL;
@@ -13,6 +14,7 @@ private:
 	int WindowHeight = 480;		// 窗口高度
 
 	static const uint32_t FrameCount = 3;
+	static const DXGI_FORMAT rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	//调试层
 	ComPtr<ID3D12Debug6> m_D3D12DebugDevice;
@@ -43,6 +45,8 @@ private:
 	D3D12_RESOURCE_BARRIER beg_barrier = {};
 	D3D12_RESOURCE_BARRIER end_barrier = {};
 
+	RenderPipeline m_Pipeline;
+
 public:
 
 	HANDLE GetRenderEvent() const { return RenderEvent; }
@@ -60,6 +64,8 @@ public:
 	void CreateRenderTarget(HWND hwnd);
 
 	void CreateFenceAndBarrier();
+
+	void CreatePipeline();
 
 	void Render();
 

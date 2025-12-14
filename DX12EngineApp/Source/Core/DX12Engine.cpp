@@ -117,7 +117,7 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 	swapchainDesc.BufferCount = FrameCount;
 	swapchainDesc.Width = WindowWidth;
 	swapchainDesc.Height = WindowHeight;
-	swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapchainDesc.Format = rtvFormat;
 	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapchainDesc.SampleDesc.Count = 1;
@@ -169,6 +169,14 @@ void DX12Engine::CreateFenceAndBarrier()
 	end_barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 }
 
+void DX12Engine::CreatePipeline()
+{
+	m_Pipeline.CreateRootSignature(m_D3D12Device.Get());
+	m_Pipeline.CreatePSO(m_D3D12Device.Get(), rtvFormat);
+	m_Pipeline.CreateVertexResource(m_D3D12Device.Get(),WindowWidth,WindowHeight);
+	
+}
+
 void DX12Engine::Render()
 {
 	RTVHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
@@ -179,17 +187,28 @@ void DX12Engine::Render()
 
 	m_CommandAllocator->Reset();
 
+	
 	m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
 
 	beg_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
 
 	m_CommandList->ResourceBarrier(1, &beg_barrier);
 
+	m_CommandList->SetGraphicsRootSignature(m_Pipeline.GetRootSignature());
+	m_CommandList->SetPipelineState(m_Pipeline.GetPSO());
+
+	m_CommandList->RSSetViewports(1, &m_Pipeline.GetViewport());
+	m_CommandList->RSSetScissorRects(1, &m_Pipeline.GetScissorRect());
+
 	// 用 RTV 句柄设置渲染目标
 	m_CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
 
 	// 清空当前渲染目标的背景为天蓝色
 	m_CommandList->ClearRenderTargetView(RTVHandle, DirectX::Colors::SkyBlue, 0, nullptr);
+
+	m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_CommandList->IASetVertexBuffers(0, 1, &m_Pipeline.GetVBV());
+	m_CommandList->DrawInstanced(3, 1, 0, 0);
 
 	end_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
 

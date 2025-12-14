@@ -38,6 +38,7 @@ void DX12APP::InitDX12()
 	engine.CreateCommandComponents();
 	engine.CreateRenderTarget(m_hwnd);
 	engine.CreateFenceAndBarrier();
+	engine.CreatePipeline();
 
 }
 
