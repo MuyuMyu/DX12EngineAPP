@@ -24,6 +24,9 @@
     <ClCompile Include="Source\Core\DX12Engine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Core\Render\RenderPipeline.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -33,6 +36,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\DX12Engine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\Render\RenderPipeline.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

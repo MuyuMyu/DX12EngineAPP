@@ -19,11 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Render\RenderPipeline.cpp" />
     <ClCompile Include="Source\APP\DX12APP.cpp" />
     <ClCompile Include="Source\Core\DX12Engine.cpp" />
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\Render\RenderPipeline.h" />
     <ClInclude Include="Source\APP\DX12APP.h" />
     <ClInclude Include="Source\Core\DX12Engine.h" />
     <ClInclude Include="Source\stdafx.h" />
@@ -31,6 +33,10 @@
   <ItemGroup>
     <None Include="Assets\Shaders\shader.hlsl">
       <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
