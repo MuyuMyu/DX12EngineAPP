@@ -208,7 +208,7 @@ void DX12Engine::Render()
 
 	m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_CommandList->IASetVertexBuffers(0, 1, &m_Pipeline.GetVBV());
-	m_CommandList->DrawInstanced(3, 1, 0, 0);
+	m_CommandList->DrawInstanced(6, 1, 0, 0);
 
 	end_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
 

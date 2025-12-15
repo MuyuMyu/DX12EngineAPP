@@ -139,11 +139,21 @@ void RenderPipeline::CreatePSO(ID3D12Device* device, DXGI_FORMAT rtvFormat)
 
 void RenderPipeline::CreateVertexResource(ID3D12Device* device, int w, int h)
 {
-	VERTEX vertexs[3] =
+	//VERTEX vertexs[3] =
+	//{
+	//	{{0.0f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
+	//	{{0.75f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
+	//	{{-0.75f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Green)},
+	//};
+
+	VERTEX vertexs[] =
 	{
-		{{0.0f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
-		{{0.75f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
-		{{-0.75f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Green)},
+		{{-0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
+		{{0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Yellow)},
+		{{0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
+		{{-0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
+		{{0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
+		{{-0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Green)},
 	};
 
 	D3D12_RESOURCE_DESC VertexDesc = {};
