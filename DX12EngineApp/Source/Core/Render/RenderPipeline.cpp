@@ -202,3 +202,45 @@ void RenderPipeline::CreateVertexResource(ID3D12Device* device, int w, int h)
 
 
 }
+
+void RenderPipeline::LoadTexture()
+{
+	if (m_WICFactory == nullptr) CoCreateInstance(CLSID_WICImagingFactory,
+		nullptr,
+		CLSCTX_INPROC_SERVER,
+		IID_PPV_ARGS(&m_WICFactory));
+
+	HRESULT hr = m_WICFactory->CreateDecoderFromFilename(TextureFilename.c_str(),
+		nullptr,
+		GENERIC_READ,
+		WICDecodeMetadataCacheOnDemand,
+		&m_WICBitmapDecoder
+	);
+
+	//std::wostringstream output_str;		// 用于格式化字符串
+	//switch (hr)
+	//{
+	//case S_OK: break;	// 解码成功，直接 break 进入下一步即可
+
+	//case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):	// 文件找不到
+	//	output_str << L"找不到文件 " << TextureFilename << L" ！请检查文件路径是否有误！";
+	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
+	//	return false;
+
+	//case HRESULT_FROM_WIN32(ERROR_FILE_CORRUPT):	// 文件句柄正在被另一个应用进程占用
+	//	output_str << L"文件 " << TextureFilename << L" 已经被另一个应用进程打开并占用了！请先关闭那个应用进程！";
+	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
+	//	return false;
+
+	//case WINCODEC_ERR_COMPONENTNOTFOUND:			// 找不到可解码的组件，说明这不是有效的图像文件
+	//	output_str << L"文件 " << TextureFilename << L" 不是有效的图像文件，无法解码！请检查文件是否为图像文件！";
+	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
+	//	return false;
+
+	//default:			// 发生其他未知错误
+	//	output_str << L"文件 " << TextureFilename << L" 解码失败！发生了其他错误，错误码：" << hr << L" ，请查阅微软官方文档。";
+	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
+	//	return false;
+	//}
+
+}

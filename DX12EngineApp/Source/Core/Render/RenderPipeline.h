@@ -4,6 +4,8 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <DirectXMath.h>
+#include <wincodec.h>
+#include <string>
 
 using namespace DirectX;
 using namespace Microsoft;
@@ -27,6 +29,10 @@ private:
 	D3D12_VIEWPORT viewPort;
 	D3D12_RECT ScissorRect;
 
+	ComPtr<IWICImagingFactory> m_WICFactory;
+	std::wstring TextureFilename = L"Assets/Textures/diamond_ore.png";
+	ComPtr<IWICBitmapDecoder> m_WICBitmapDecoder;
+
 public:
 	 
 	ID3D12RootSignature* GetRootSignature() const { return m_RootSignature.Get(); }
@@ -42,5 +48,7 @@ public:
 	void CreatePSO(ID3D12Device* device,DXGI_FORMAT rtvFormat);
 
 	void CreateVertexResource(ID3D12Device* device,int w,int h);
+
+	void LoadTexture();
 };
 
