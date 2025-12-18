@@ -1,5 +1,6 @@
 #include "../../stdafx.h"
 #include "RenderPipeline.h"
+#include <sstream>
 
 
 void RenderPipeline::CreateRootSignature(ID3D12Device* device)
@@ -203,12 +204,24 @@ void RenderPipeline::CreateVertexResource(ID3D12Device* device, int w, int h)
 
 }
 
-void RenderPipeline::LoadTexture()
+bool RenderPipeline::LoadTexture()
 {
-	if (m_WICFactory == nullptr) CoCreateInstance(CLSID_WICImagingFactory,
-		nullptr,
-		CLSCTX_INPROC_SERVER,
-		IID_PPV_ARGS(&m_WICFactory));
+	if (m_WICFactory == nullptr)
+	{
+		HRESULT hr = CoCreateInstance(
+			CLSID_WICImagingFactory,  // 必须是这个，固定不变
+			nullptr,                  // 不聚合，通常为 nullptr
+			CLSCTX_INPROC_SERVER,     // 在进程内服务器加载（最常用）
+			IID_PPV_ARGS(&m_WICFactory)
+		);
+
+		if (FAILED(hr))
+		{
+			// 处理创建失败的情况（比如系统缺少 WIC 组件，老版本 Windows）
+			MessageBox(nullptr, L"Failed to create WIC Imaging Factory!", L"Error", MB_OK | MB_ICONERROR);
+			return false;
+		}
+	}
 
 	HRESULT hr = m_WICFactory->CreateDecoderFromFilename(TextureFilename.c_str(),
 		nullptr,
@@ -217,30 +230,32 @@ void RenderPipeline::LoadTexture()
 		&m_WICBitmapDecoder
 	);
 
-	//std::wostringstream output_str;		// 用于格式化字符串
-	//switch (hr)
-	//{
-	//case S_OK: break;	// 解码成功，直接 break 进入下一步即可
+	std::wostringstream output_str;		// Used for formatting strings
+	switch (hr)
+	{
+	case S_OK: break;	// Decoding successful, just break to proceed
 
-	//case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):	// 文件找不到
-	//	output_str << L"找不到文件 " << TextureFilename << L" ！请检查文件路径是否有误！";
-	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
-	//	return false;
+	case HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):	// File not found
+		output_str << L"Cannot find file " << TextureFilename << L"! Please check if the file path is correct!";
+		MessageBox(NULL, output_str.str().c_str(), L"Error", MB_OK | MB_ICONERROR);
+		return false;
 
-	//case HRESULT_FROM_WIN32(ERROR_FILE_CORRUPT):	// 文件句柄正在被另一个应用进程占用
-	//	output_str << L"文件 " << TextureFilename << L" 已经被另一个应用进程打开并占用了！请先关闭那个应用进程！";
-	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
-	//	return false;
+	case HRESULT_FROM_WIN32(ERROR_FILE_CORRUPT):	// Note: ERROR_FILE_CORRUPT is not the correct code for "file in use"
+		// Actually, the intended error for "file locked by another process" is usually ERROR_SHARING_VIOLATION or ERROR_ACCESS_DENIED
+		output_str << L"File " << TextureFilename << L" is already opened and locked by another application! Please close that application first!";
+		MessageBox(NULL, output_str.str().c_str(), L"Error", MB_OK | MB_ICONERROR);
+		return false;
 
-	//case WINCODEC_ERR_COMPONENTNOTFOUND:			// 找不到可解码的组件，说明这不是有效的图像文件
-	//	output_str << L"文件 " << TextureFilename << L" 不是有效的图像文件，无法解码！请检查文件是否为图像文件！";
-	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
-	//	return false;
+	case WINCODEC_ERR_COMPONENTNOTFOUND:			// No decoder component found → not a valid image file
+		output_str << L"File " << TextureFilename << L" is not a valid image file and cannot be decoded! Please verify it is an image file!";
+		MessageBox(NULL, output_str.str().c_str(), L"Error", MB_OK | MB_ICONERROR);
+		return false;
 
-	//default:			// 发生其他未知错误
-	//	output_str << L"文件 " << TextureFilename << L" 解码失败！发生了其他错误，错误码：" << hr << L" ，请查阅微软官方文档。";
-	//	MessageBox(NULL, output_str.str().c_str(), L"错误", MB_OK | MB_ICONERROR);
-	//	return false;
-	//}
+	default:			// Other unknown error occurred
+		output_str << L"Failed to decode file " << TextureFilename << L"! An unknown error occurred. Error code: " << hr << L". Please refer to Microsoft official documentation.";
+		MessageBox(NULL, output_str.str().c_str(), L"Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
 
+	m_WICBitmapDecoder->GetFrame(0, &m_WICBitmapDecodeFrame);
 }

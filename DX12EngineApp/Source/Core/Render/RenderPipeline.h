@@ -32,6 +32,7 @@ private:
 	ComPtr<IWICImagingFactory> m_WICFactory;
 	std::wstring TextureFilename = L"Assets/Textures/diamond_ore.png";
 	ComPtr<IWICBitmapDecoder> m_WICBitmapDecoder;
+	ComPtr<IWICBitmapFrameDecode> m_WICBitmapDecodeFrame;
 
 public:
 	 
@@ -49,6 +50,6 @@ public:
 
 	void CreateVertexResource(ID3D12Device* device,int w,int h);
 
-	void LoadTexture();
+	bool LoadTexture();
 };
 
