@@ -33,6 +33,15 @@ private:
 	std::wstring TextureFilename = L"Assets/Textures/diamond_ore.png";
 	ComPtr<IWICBitmapDecoder> m_WICBitmapDecoder;
 	ComPtr<IWICBitmapFrameDecode> m_WICBitmapDecodeFrame;
+	DXGI_FORMAT TextureFormat = DXGI_FORMAT_UNKNOWN;
+	ComPtr<IWICFormatConverter> m_WICFormatConverter;
+	ComPtr<IWICBitmapSource> m_BitmapSource;
+	UINT TextureWidth = 0;
+	UINT TextureHight = 0;
+	UINT BitsPerPixel = 0;
+	UINT BytePerRowSize = 0;
+
+
 
 public:
 	 

@@ -1,8 +1,8 @@
 #include "../../stdafx.h"
 #include "RenderPipeline.h"
-#include <sstream>
+#include "../../Util/Resource/TextureResourceUtil.h"
 
-
+using namespace DX12EngineUtils;
 void RenderPipeline::CreateRootSignature(ID3D12Device* device)
 {
 	ComPtr<ID3DBlob> SignatureBlob;
@@ -258,4 +258,40 @@ bool RenderPipeline::LoadTexture()
 	}
 
 	m_WICBitmapDecoder->GetFrame(0, &m_WICBitmapDecodeFrame);
+
+	WICPixelFormatGUID SourceFormat = {};
+	GUID TargeFormat = {};
+
+	m_WICBitmapDecodeFrame->GetPixelFormat(&SourceFormat);
+
+	if (GetTargetPixelFormat(&SourceFormat, &TargeFormat))
+	{
+		TextureFormat = GetDXGIFormatFromPixelFormat(&TargeFormat);
+	}
+	else
+	{
+		::MessageBox(NULL, L"Texture Not Support!", L"Warring", MB_OK);
+		return false;
+	}
+
+	m_WICFactory->CreateFormatConverter(&m_WICFormatConverter);
+
+	m_WICFormatConverter->Initialize(m_BitmapSource.Get(),
+		TargeFormat,
+		WICBitmapDitherTypeNone,
+		nullptr,
+		0.0f,
+		WICBitmapPaletteTypeCustom);
+
+	m_WICFormatConverter.As(&m_BitmapSource);
+
+	m_BitmapSource->GetSize(&TextureWidth, &TextureHight);
+
+	ComPtr<IWICComponentInfo> _temp_WICComponentInfo = {};
+	ComPtr<IWICPixelFormatInfo> _temp_WICPixelFormatInfo = {};
+
+	m_WICFactory->CreateComponentInfo(TargeFormat, &_temp_WICComponentInfo);
+	_temp_WICComponentInfo.As(&_temp_WICPixelFormatInfo);
+	_temp_WICPixelFormatInfo->GetBitsPerPixel(&BitsPerPixel);
+
 }

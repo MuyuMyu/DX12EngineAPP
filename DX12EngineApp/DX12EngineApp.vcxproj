@@ -29,6 +29,7 @@
     <ClInclude Include="Source\APP\DX12APP.h" />
     <ClInclude Include="Source\Core\DX12Engine.h" />
     <ClInclude Include="Source\stdafx.h" />
+    <ClInclude Include="Source\Util\Resource\TextureResourceUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\shader.hlsl">

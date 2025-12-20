@@ -41,6 +41,9 @@
     <ClInclude Include="Source\Core\Render\RenderPipeline.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Util\Resource\TextureResourceUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\shader.hlsl" />
