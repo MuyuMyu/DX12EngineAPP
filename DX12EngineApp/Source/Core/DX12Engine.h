@@ -1,4 +1,5 @@
 #pragma once
+
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
@@ -32,11 +33,17 @@ private:
 
 	//资源与交换链
 	ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
+	ComPtr<ID3D12DescriptorHeap> m_SRVHeap;
+
 	ComPtr<IDXGISwapChain4> m_DXGISwapChain;
+
 	ComPtr<ID3D12Resource> m_RenderTarget[3];
 	D3D12_CPU_DESCRIPTOR_HANDLE RTVHandle;
 	UINT RTVDescriptionSize = 0;
 	UINT FrameIndex = 0;
+
+	ComPtr<ID3D12Resource> m_UploadTextureResource;
+	ComPtr<ID3D12Resource> m_DefaultTextureResource;
 
 	//围栏与资源屏障
 	ComPtr<ID3D12Fence1> m_Fence;
@@ -66,6 +73,10 @@ public:
 	void CreateFenceAndBarrier();
 
 	void CreatePipeline();
+
+	void CreateSRVHeap();
+
+	void CreateUploadAndDefaultResource();
 
 	void Render();
 

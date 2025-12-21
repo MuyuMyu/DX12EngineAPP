@@ -177,6 +177,42 @@ void DX12Engine::CreatePipeline()
 	
 }
 
+void DX12Engine::CreateSRVHeap()
+{
+	D3D12_DESCRIPTOR_HEAP_DESC SRVHeapDesc = {};
+
+	SRVHeapDesc.NumDescriptors = 1;
+	SRVHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	SRVHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+
+	m_D3D12Device->CreateDescriptorHeap(&SRVHeapDesc, IID_PPV_ARGS(&m_SRVHeap));
+
+}
+
+void DX12Engine::CreateUploadAndDefaultResource()
+{
+	D3D12_RESOURCE_DESC UploadResourceDesc = {};
+
+	UploadResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	UploadResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	UploadResourceDesc.Width = m_Pipeline.GetUploadResourceSize();
+	UploadResourceDesc.Height = 1;
+	UploadResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+	UploadResourceDesc.DepthOrArraySize = 1;
+	UploadResourceDesc.MipLevels = 1;
+	UploadResourceDesc.SampleDesc.Count = 1;
+
+	D3D12_HEAP_PROPERTIES UploadHeapDesc = { D3D12_HEAP_TYPE_UPLOAD };
+
+	m_D3D12Device->CreateCommittedResource(&UploadHeapDesc,
+		D3D12_HEAP_FLAG_NONE,
+		&UploadResourceDesc,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&m_UploadTextureResource));
+
+}
+
 void DX12Engine::Render()
 {
 	RTVHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();

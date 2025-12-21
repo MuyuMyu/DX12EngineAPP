@@ -39,8 +39,11 @@ private:
 	UINT TextureWidth = 0;
 	UINT TextureHight = 0;
 	UINT BitsPerPixel = 0;
-	UINT BytePerRowSize = 0;
+	UINT BytePerRowSize = 0; //µ¥Î»£ºBytes ×Ö½Ú
 
+	UINT TextureSize = 0;
+	UINT UploadResourceRowSize = 0;
+	UINT UploadResourceSize = 0;
 
 
 public:
@@ -50,6 +53,7 @@ public:
 	const D3D12_VERTEX_BUFFER_VIEW& GetVBV() const { return VertexBufferView; }
 	const D3D12_VIEWPORT& GetViewport() const { return viewPort; }
 	const D3D12_RECT& GetScissorRect() const { return ScissorRect; }
+	const UINT GetUploadResourceSize() const { return UploadResourceSize; }
 
 public:
 
@@ -60,5 +64,7 @@ public:
 	void CreateVertexResource(ID3D12Device* device,int w,int h);
 
 	bool LoadTexture();
+
+	inline UINT Ceil(UINT A, UINT B) { return (A + B - 1) / B; }
 };
 

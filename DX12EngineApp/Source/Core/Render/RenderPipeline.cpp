@@ -294,4 +294,14 @@ bool RenderPipeline::LoadTexture()
 	_temp_WICComponentInfo.As(&_temp_WICPixelFormatInfo);
 	_temp_WICPixelFormatInfo->GetBitsPerPixel(&BitsPerPixel);
 
+	BytePerRowSize = TextureWidth * BitsPerPixel / 8;
+
+	TextureSize = BytePerRowSize * TextureHight;
+
+	UploadResourceRowSize = Ceil(BytePerRowSize, 256) * 256;
+
+	UploadResourceSize = UploadResourceRowSize * TextureHight;
+
+	return true;
+	
 }
