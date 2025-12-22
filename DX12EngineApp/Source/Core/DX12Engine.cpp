@@ -211,6 +211,26 @@ void DX12Engine::CreateUploadAndDefaultResource()
 		nullptr,
 		IID_PPV_ARGS(&m_UploadTextureResource));
 
+	D3D12_RESOURCE_DESC DefaultResourceDesc = {};
+
+	DefaultResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	DefaultResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	DefaultResourceDesc.Width = m_Pipeline.GetTextureWidth();
+	DefaultResourceDesc.Height = m_Pipeline.GetTextureHeight();
+	DefaultResourceDesc.Format = m_Pipeline.GetTextureFormat();
+	DefaultResourceDesc.DepthOrArraySize = 1;
+	DefaultResourceDesc.MipLevels = 1;
+	DefaultResourceDesc.SampleDesc.Count = 1;
+
+	D3D12_HEAP_PROPERTIES DefaultHeapDesc = { D3D12_HEAP_TYPE_DEFAULT };
+
+	m_D3D12Device->CreateCommittedResource(&DefaultHeapDesc,
+		D3D12_HEAP_FLAG_NONE,
+		&DefaultResourceDesc,
+		D3D12_RESOURCE_STATE_COPY_DEST,
+		nullptr,
+		IID_PPV_ARGS(&m_DefaultTextureResource));
+
 }
 
 void DX12Engine::Render()

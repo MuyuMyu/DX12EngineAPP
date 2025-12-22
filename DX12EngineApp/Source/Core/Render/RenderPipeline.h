@@ -37,7 +37,7 @@ private:
 	ComPtr<IWICFormatConverter> m_WICFormatConverter;
 	ComPtr<IWICBitmapSource> m_BitmapSource;
 	UINT TextureWidth = 0;
-	UINT TextureHight = 0;
+	UINT TextureHeight = 0;
 	UINT BitsPerPixel = 0;
 	UINT BytePerRowSize = 0; //µ¥Î»£ºBytes ×Ö½Ú
 
@@ -54,6 +54,9 @@ public:
 	const D3D12_VIEWPORT& GetViewport() const { return viewPort; }
 	const D3D12_RECT& GetScissorRect() const { return ScissorRect; }
 	const UINT GetUploadResourceSize() const { return UploadResourceSize; }
+	const UINT GetTextureWidth() const { return TextureWidth; }
+	const UINT GetTextureHeight() const { return TextureHeight; }
+	const DXGI_FORMAT GetTextureFormat() const{ return TextureFormat; }
 
 public:
 
