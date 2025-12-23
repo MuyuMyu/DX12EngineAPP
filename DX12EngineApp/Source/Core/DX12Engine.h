@@ -78,6 +78,8 @@ public:
 
 	void CreateUploadAndDefaultResource();
 
+	void CopyTextureDataToDefaultResource();
+
 	void Render();
 
 };

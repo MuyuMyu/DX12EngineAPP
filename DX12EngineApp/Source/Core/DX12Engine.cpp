@@ -174,6 +174,7 @@ void DX12Engine::CreatePipeline()
 	m_Pipeline.CreateRootSignature(m_D3D12Device.Get());
 	m_Pipeline.CreatePSO(m_D3D12Device.Get(), rtvFormat);
 	m_Pipeline.CreateVertexResource(m_D3D12Device.Get(),WindowWidth,WindowHeight);
+	m_Pipeline.LoadTexture();
 	
 }
 
@@ -230,6 +231,83 @@ void DX12Engine::CreateUploadAndDefaultResource()
 		D3D12_RESOURCE_STATE_COPY_DEST,
 		nullptr,
 		IID_PPV_ARGS(&m_DefaultTextureResource));
+
+}
+
+void DX12Engine::CopyTextureDataToDefaultResource()
+{
+	BYTE* TextureData = (BYTE*)malloc(m_Pipeline.GetTextureSize());
+
+	m_Pipeline.GetBitmapSource()->CopyPixels(nullptr,
+		m_Pipeline.GetBytePerRowSize(),
+		m_Pipeline.GetTextureSize(),
+		TextureData);
+
+	BYTE* TransferPoint = nullptr;
+
+	m_UploadTextureResource->Map(0,
+		nullptr,
+		reinterpret_cast<void**>(&TransferPoint));
+
+	for (UINT i = 0;i < m_Pipeline.GetTextureHeight();i++)
+	{
+		memcpy(TransferPoint, TextureData, m_Pipeline.GetBytePerRowSize());
+
+		TextureData += m_Pipeline.GetBytePerRowSize();
+
+		TransferPoint += m_Pipeline.GetUploadResourceRowSize();
+	}
+
+	m_UploadTextureResource->Unmap(0, nullptr);
+
+	TextureData -= m_Pipeline.GetTextureSize();
+
+	free(TextureData);
+
+	D3D12_PLACED_SUBRESOURCE_FOOTPRINT PlacedFootprint = {};
+	D3D12_RESOURCE_DESC DefaultResourceDesc = m_DefaultTextureResource->GetDesc();
+
+	m_D3D12Device->GetCopyableFootprints(&DefaultResourceDesc,
+		0,
+		1,
+		0,
+		&PlacedFootprint,
+		nullptr,
+		nullptr,
+		nullptr);
+
+	D3D12_TEXTURE_COPY_LOCATION DstLocation = {};
+	DstLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+	DstLocation.SubresourceIndex = 0;
+	DstLocation.pResource = m_DefaultTextureResource.Get();
+
+	D3D12_TEXTURE_COPY_LOCATION SrcLocation = {};
+	SrcLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+	SrcLocation.PlacedFootprint = PlacedFootprint;
+	SrcLocation.pResource = m_UploadTextureResource.Get();
+
+	m_CommandAllocator->Reset();
+	m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
+
+	m_CommandList->CopyTextureRegion(&DstLocation,
+		0,
+		0,
+		0,
+		&SrcLocation,
+		nullptr);
+
+	m_CommandList->Close();
+
+	ID3D12CommandList* _temp_cmdlists[] = { m_CommandList.Get() };
+
+	m_CommandQueue->ExecuteCommandLists(1, _temp_cmdlists);
+
+	FenceValue++;
+
+	m_CommandQueue->Signal(m_Fence.Get(), FenceValue);
+
+	m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
+
 
 }
 

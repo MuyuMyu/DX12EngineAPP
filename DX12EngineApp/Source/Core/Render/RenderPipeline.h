@@ -50,14 +50,18 @@ public:
 	 
 	ID3D12RootSignature* GetRootSignature() const { return m_RootSignature.Get(); }
 	ID3D12PipelineState* GetPSO() const { return m_PipelineStateObject.Get(); }
+	IWICBitmapSource* GetBitmapSource() const { return m_BitmapSource.Get(); }
 	const D3D12_VERTEX_BUFFER_VIEW& GetVBV() const { return VertexBufferView; }
 	const D3D12_VIEWPORT& GetViewport() const { return viewPort; }
 	const D3D12_RECT& GetScissorRect() const { return ScissorRect; }
 	const UINT GetUploadResourceSize() const { return UploadResourceSize; }
+	const UINT GetUploadResourceRowSize() const { return UploadResourceRowSize; }
 	const UINT GetTextureWidth() const { return TextureWidth; }
 	const UINT GetTextureHeight() const { return TextureHeight; }
+	const UINT GetTextureSize() const { return TextureSize; }
+	const UINT GetBytePerRowSize() const { return BytePerRowSize; }
 	const DXGI_FORMAT GetTextureFormat() const{ return TextureFormat; }
-
+	
 public:
 
 	void CreateRootSignature(ID3D12Device* device);
