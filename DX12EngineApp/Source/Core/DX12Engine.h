@@ -45,6 +45,9 @@ private:
 	ComPtr<ID3D12Resource> m_UploadTextureResource;
 	ComPtr<ID3D12Resource> m_DefaultTextureResource;
 
+	D3D12_CPU_DESCRIPTOR_HANDLE SRV_CPUHandle;
+	D3D12_GPU_DESCRIPTOR_HANDLE SRV_GPUHandle;
+
 	//Œß¿∏”Î◊ ‘¥∆¡’œ
 	ComPtr<ID3D12Fence1> m_Fence;
 	UINT FenceValue = 0;
@@ -79,6 +82,8 @@ public:
 	void CreateUploadAndDefaultResource();
 
 	void CopyTextureDataToDefaultResource();
+
+	void CreateSRV();
 
 	void Render();
 

@@ -308,7 +308,23 @@ void DX12Engine::CopyTextureDataToDefaultResource()
 
 	m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
 
+}
 
+void DX12Engine::CreateSRV()
+{
+	D3D12_SHADER_RESOURCE_VIEW_DESC SRVDescriptorDesc = {};
+
+	SRVDescriptorDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	SRVDescriptorDesc.Format = m_Pipeline.GetTextureFormat();
+	SRVDescriptorDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	SRVDescriptorDesc.Texture2D.MipLevels = 1;
+
+	SRV_CPUHandle = m_SRVHeap->GetCPUDescriptorHandleForHeapStart();
+
+	m_D3D12Device->CreateShaderResourceView(m_DefaultTextureResource.Get(),
+		&SRVDescriptorDesc,
+		SRV_CPUHandle);
+	SRV_GPUHandle = m_SRVHeap->GetGPUDescriptorHandleForHeapStart();
 }
 
 void DX12Engine::Render()
