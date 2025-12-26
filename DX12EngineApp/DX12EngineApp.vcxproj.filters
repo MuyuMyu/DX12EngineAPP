@@ -49,4 +49,9 @@
     <None Include="Assets\Shaders\shader.hlsl" />
     <None Include="Assets\Shaders\texshader.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Textures\diamond_ore.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

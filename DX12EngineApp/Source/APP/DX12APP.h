@@ -9,7 +9,7 @@ class DX12APP
 private:
 
 	int WindowWidth = 640;		// 窗口宽度
-	int WindowHeight = 480;		// 窗口高度
+	int WindowHeight = 640;		// 窗口高度
 	HWND m_hwnd;				// 窗口句柄
 	DX12Engine engine;
 

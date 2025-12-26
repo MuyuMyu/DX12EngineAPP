@@ -23,7 +23,7 @@ VSOutput VSMain(VSInput input)
 Texture2D m_texture : register(t0, space0);
 SamplerState m_sampler : register(s0, space0);
 
-float4 PSMain(VSOutput input)
+float4 PSMain(VSOutput input) : SV_Target
 {
     return m_texture.Sample(m_sampler, input.texcoordUV);
 }

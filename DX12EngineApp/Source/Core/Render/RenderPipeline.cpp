@@ -317,7 +317,7 @@ bool RenderPipeline::LoadTexture()
 
 	m_WICFactory->CreateFormatConverter(&m_WICFormatConverter);
 
-	m_WICFormatConverter->Initialize(m_BitmapSource.Get(),
+	m_WICFormatConverter->Initialize(m_WICBitmapDecodeFrame.Get(),
 		TargeFormat,
 		WICBitmapDitherTypeNone,
 		nullptr,
@@ -342,6 +342,22 @@ bool RenderPipeline::LoadTexture()
 	UploadResourceRowSize = Ceil(BytePerRowSize, 256) * 256;
 
 	UploadResourceSize = UploadResourceRowSize * TextureHeight;
+
+	// ==================== 打印纹理信息 ====================
+	std::wostringstream info;
+	info << L"\n=== Texture Loaded Successfully ===\n"
+		<< L"  File:              " << TextureFilename << L"\n"
+		<< L"  Width:             " << TextureWidth << L" px\n"
+		<< L"  Height:            " << TextureHeight << L" px\n"
+		<< L"  Bits per pixel:    " << BitsPerPixel << L"\n"
+		<< L"  Bytes per row:     " << BytePerRowSize << L" (original)\n"
+		<< L"  Texture size:      " << TextureSize << L" bytes\n"
+		<< L"  Upload row pitch:  " << UploadResourceRowSize << L" bytes (256-aligned)\n"
+		<< L"  Upload total size: " << UploadResourceSize << L" bytes\n"
+		<< L"  DXGI Format:       " << TextureFormat << L" (0x" << std::hex << TextureFormat << L")\n"
+		<< L"====================================\n";
+
+	OutputDebugString(info.str().c_str());
 
 	return true;
 	
