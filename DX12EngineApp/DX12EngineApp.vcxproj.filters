@@ -47,5 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shaders\shader.hlsl" />
+    <None Include="Assets\Shaders\texshader.hlsl" />
   </ItemGroup>
 </Project>

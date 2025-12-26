@@ -171,10 +171,16 @@ void DX12Engine::CreateFenceAndBarrier()
 
 void DX12Engine::CreatePipeline()
 {
+	m_Pipeline.LoadTexture();
+	CreateSRVHeap();
+	CreateUploadAndDefaultResource();
+	CopyTextureDataToDefaultResource();
+	CreateSRV();
+
 	m_Pipeline.CreateRootSignature(m_D3D12Device.Get());
 	m_Pipeline.CreatePSO(m_D3D12Device.Get(), rtvFormat);
 	m_Pipeline.CreateVertexResource(m_D3D12Device.Get(),WindowWidth,WindowHeight);
-	m_Pipeline.LoadTexture();
+	
 	
 }
 
@@ -355,6 +361,10 @@ void DX12Engine::Render()
 
 	// 清空当前渲染目标的背景为天蓝色
 	m_CommandList->ClearRenderTargetView(RTVHandle, DirectX::Colors::SkyBlue, 0, nullptr);
+
+	ID3D12DescriptorHeap* _temp_DescriptorHeap[] = {m_SRVHeap.Get()};
+	m_CommandList->SetDescriptorHeaps(1, _temp_DescriptorHeap);
+	m_CommandList->SetGraphicsRootDescriptorTable(0, SRV_GPUHandle);
 
 	m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_CommandList->IASetVertexBuffers(0, 1, &m_Pipeline.GetVBV());

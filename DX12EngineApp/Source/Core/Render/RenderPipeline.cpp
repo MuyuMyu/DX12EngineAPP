@@ -8,11 +8,42 @@ void RenderPipeline::CreateRootSignature(ID3D12Device* device)
 	ComPtr<ID3DBlob> SignatureBlob;
 	ComPtr<ID3DBlob> ErrorBlob;
 
+	D3D12_DESCRIPTOR_RANGE SRVDescriptorRangeDesc = {};
+	SRVDescriptorRangeDesc.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	SRVDescriptorRangeDesc.NumDescriptors = 1;
+	SRVDescriptorRangeDesc.BaseShaderRegister = 0;
+	SRVDescriptorRangeDesc.RegisterSpace = 0;
+	SRVDescriptorRangeDesc.OffsetInDescriptorsFromTableStart = 0;
+
+	D3D12_ROOT_DESCRIPTOR_TABLE RootDescriptorTableDesc = {};
+	RootDescriptorTableDesc.NumDescriptorRanges = 1;
+	RootDescriptorTableDesc.pDescriptorRanges = &SRVDescriptorRangeDesc;
+
+	D3D12_ROOT_PARAMETER RootParameter = {};
+	RootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	RootParameter.DescriptorTable = RootDescriptorTableDesc;
+	RootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+
+	D3D12_STATIC_SAMPLER_DESC StaticSamplerDesc = {};
+	StaticSamplerDesc.ShaderRegister = 0;
+	StaticSamplerDesc.RegisterSpace = 0;
+	StaticSamplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	StaticSamplerDesc.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_MIP_POINT;
+	StaticSamplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	StaticSamplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	StaticSamplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+	StaticSamplerDesc.MinLOD = 0;
+	StaticSamplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+	StaticSamplerDesc.MipLODBias = 0;
+	StaticSamplerDesc.MaxAnisotropy = 1;
+	StaticSamplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+
 	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc = {};
-	rootsignatureDesc.NumParameters = 0;
-	rootsignatureDesc.pParameters = nullptr;
-	rootsignatureDesc.NumStaticSamplers = 0;
-	rootsignatureDesc.pStaticSamplers = nullptr;
+	rootsignatureDesc.NumParameters = 1;
+	rootsignatureDesc.pParameters = &RootParameter;
+	rootsignatureDesc.NumStaticSamplers = 1;
+	rootsignatureDesc.pStaticSamplers = &StaticSamplerDesc;
 	rootsignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	HRESULT hr = D3D12SerializeRootSignature(&rootsignatureDesc,
@@ -55,9 +86,9 @@ void RenderPipeline::CreatePSO(ID3D12Device* device, DXGI_FORMAT rtvFormat)
 	InputElementDesc[0].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
 	InputElementDesc[0].InstanceDataStepRate = 0;
 
-	InputElementDesc[1].SemanticName = "COLOR";
+	InputElementDesc[1].SemanticName = "TEXCOORD";
 	InputElementDesc[1].SemanticIndex = 0;
-	InputElementDesc[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	InputElementDesc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	InputElementDesc[1].InputSlot = 0;
 	InputElementDesc[1].AlignedByteOffset = 16;
 	InputElementDesc[1].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
@@ -72,7 +103,7 @@ void RenderPipeline::CreatePSO(ID3D12Device* device, DXGI_FORMAT rtvFormat)
 	ComPtr<ID3DBlob> PixelShadrBlob;
 	ComPtr<ID3DBlob> ErrorBlob;
 
-	HRESULT vsHr = D3DCompileFromFile(L"Assets/Shaders/shader.hlsl",
+	HRESULT vsHr = D3DCompileFromFile(L"Assets/Shaders/texshader.hlsl",
 		nullptr,
 		nullptr,
 		"VSMain",
@@ -90,7 +121,7 @@ void RenderPipeline::CreatePSO(ID3D12Device* device, DXGI_FORMAT rtvFormat)
 		return;
 	}
 
-	HRESULT psHr = D3DCompileFromFile(L"Assets/Shaders/shader.hlsl",
+	HRESULT psHr = D3DCompileFromFile(L"Assets/Shaders/texshader.hlsl",
 		nullptr,
 		nullptr,
 		"PSMain",
@@ -147,14 +178,24 @@ void RenderPipeline::CreateVertexResource(ID3D12Device* device, int w, int h)
 	//	{{-0.75f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Green)},
 	//};
 
+	//VERTEX vertexs[] =
+	//{
+	//	{{-0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
+	//	{{0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Yellow)},
+	//	{{0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
+	//	{{-0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
+	//	{{0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
+	//	{{-0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Green)},
+	//};
+
 	VERTEX vertexs[] =
 	{
-		{{-0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
-		{{0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Yellow)},
-		{{0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
-		{{-0.5f,0.5f,0.0f,1.0f},XMFLOAT4(Colors::Blue)},
-		{{0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Red)},
-		{{-0.5f,-0.5f,0.0f,1.0f},XMFLOAT4(Colors::Green)},
+		{{-0.5f,0.5f,0.0f,1.0f},{0.0f,0.0f}},
+		{{0.5f,0.5f,0.0f,1.0f},{1.0f,0.0f}},
+		{{0.5f,-0.5f,0.0f,1.0f},{1.0f,1.0f}},
+		{{-0.5f,0.5f,0.0f,1.0f},{0.0f,0.0f}},
+		{{0.5f,-0.5f,0.0f,1.0f},{1.0f,1.0f}},
+		{{-0.5f,-0.5f,0.0f,1.0f},{0.0f,1.0f}},
 	};
 
 	D3D12_RESOURCE_DESC VertexDesc = {};

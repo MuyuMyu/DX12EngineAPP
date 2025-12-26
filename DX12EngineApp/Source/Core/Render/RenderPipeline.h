@@ -17,7 +17,7 @@ private:
 	struct VERTEX
 	{
 		XMFLOAT4 position;
-		XMFLOAT4 color;
+		XMFLOAT2 texcoordUV;
 	};
 
 private:
