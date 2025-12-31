@@ -47,9 +47,6 @@ void DX12APP::RenderLoop()
 	bool isExited = false;
 	MSG msg = {};
 
-
-
-
 	while (!isExited)
 	{
 		HANDLE RenderEvent = engine.GetRenderEvent();
@@ -65,7 +62,7 @@ void DX12APP::RenderLoop()
 		case 0:					// ActiveEvent 是 0，说明渲染事件已经完成了，进行下一次渲染
 			engine.Render();
 			break;
-
+			
 		case 1:					// ActiveEvent 是 1，说明渲染事件未完成，CPU 主线程同时处理窗口消息，防止界面假死
 			// 查看消息队列是否有消息，如果有就获取。 PM_REMOVE 表示获取完消息，就立刻将该消息从消息队列中移除
 			while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
