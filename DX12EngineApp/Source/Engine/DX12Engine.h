@@ -3,8 +3,11 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <memory>
 #include "../Core/Device.h"
 #include "../Render/RenderPipeline.h"
+
+class Device;
 
 using namespace Microsoft;
 using namespace Microsoft::WRL;
@@ -18,14 +21,7 @@ private:
 	static const uint32_t FrameCount = 3;
 	static const DXGI_FORMAT rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	//调试层
-	ComPtr<ID3D12Debug6> m_D3D12DebugDevice;
-	UINT m_DXGICreateFactoryFlag = NULL;
-
-	//设备层
-	ComPtr<IDXGIFactory7> m_DXGIFactory;
-	ComPtr<IDXGIAdapter4> m_DXGIAdapter;
-	ComPtr<ID3D12Device14> m_D3D12Device;
+	std::unique_ptr<Device> m_Device;
 
 	//命令组件
 	ComPtr<ID3D12CommandQueue> m_CommandQueue;
@@ -59,6 +55,8 @@ private:
 	RenderPipeline m_Pipeline;
 
 public:
+	DX12Engine();
+	~DX12Engine() = default;
 
 	HANDLE GetRenderEvent() const { return RenderEvent; }
 
@@ -66,9 +64,7 @@ public:
 
 	void InitWindowSize(int w, int h);
 
-	void CreateDebugDevice();
-
-	bool CreateDevice();
+	bool Initialize(HWND hwnd);
 
 	void CreateCommandComponents();
 

@@ -33,8 +33,8 @@ void DX12APP::InitWindow(HINSTANCE hins)
 void DX12APP::InitDX12()
 {
 	engine.InitWindowSize(WindowWidth, WindowHeight);
-	engine.CreateDebugDevice();
-	engine.CreateDevice();
+	if (!engine.Initialize(m_hwnd))
+		return;
 	engine.CreateCommandComponents();
 	engine.CreateRenderTarget(m_hwnd);
 	engine.CreateFenceAndBarrier();

@@ -4,83 +4,24 @@
 using namespace DirectX;
 
 
+DX12Engine::DX12Engine():
+	m_Device(std::make_unique<Device>())
+{
+}
+
 void DX12Engine::InitWindowSize(int w, int h)
 {
 	WindowWidth = w;
 	WindowHeight = h;
 }
 
-void DX12Engine::CreateDebugDevice()
+bool DX12Engine::Initialize(HWND hwnd)
 {
-	::CoInitialize(nullptr);	// 注意这里！DX12 的所有设备接口都是基于 COM 接口的，我们需要先全部初始化为 nullptr
-
-#if defined(_DEBUG)		// 如果是 Debug 模式下编译，就执行下面的代码
-
-	// 获取调试层设备接口
-	D3D12GetDebugInterface(IID_PPV_ARGS(&m_D3D12DebugDevice));
-	// 开启调试层
-	m_D3D12DebugDevice->EnableDebugLayer();
-	// 开启调试层后，创建 DXGI 工厂也需要 Debug Flag
-	m_DXGICreateFactoryFlag = DXGI_CREATE_FACTORY_DEBUG;
-
-#endif
-
-}
-
-bool DX12Engine::CreateDevice()
-{
-	CreateDXGIFactory2(m_DXGICreateFactoryFlag, IID_PPV_ARGS(& m_DXGIFactory));
-
-	// DX12 支持的所有功能版本，你的显卡最低需要支持 11.0
-	const D3D_FEATURE_LEVEL dx12SupportLevel[] =
-	{
-		D3D_FEATURE_LEVEL_12_2,		// 12.2
-		D3D_FEATURE_LEVEL_12_1,		// 12.1
-		D3D_FEATURE_LEVEL_12_0,		// 12.0
-		D3D_FEATURE_LEVEL_11_1,		// 11.1
-		D3D_FEATURE_LEVEL_11_0		// 11.0
-	};
-
-	// 用 EnumAdapters1 先遍历电脑上的每一块显卡
-	// 每次调用 EnumAdapters1 找到显卡会自动创建 DXGIAdapter 接口，并返回 S_OK
-	// 找不到显卡会返回 ERROR_NOT_FOUND
-	ComPtr<IDXGIAdapter1> m_DXGIAdapter_tem;
-	for (UINT i = 0; m_DXGIFactory->EnumAdapters1(i, m_DXGIAdapter_tem.GetAddressOf()) != ERROR_NOT_FOUND; i++)
-	{
-		//DXGI_ADAPTER_DESC desc;
-		//if (SUCCEEDED(m_DXGIAdapter_tem->GetDesc(&desc)))
-		//{
-		//	std::wstring adapterName = desc.Description;
-		//	std::wstring msg = L"FindGPU [" + std::to_wstring(i + 1) + L"]: " + adapterName;
-
-		//	MessageBoxW(nullptr, msg.c_str(), L"CheckGPU", MB_OK | MB_ICONINFORMATION);
-		//}
-
-		m_DXGIAdapter_tem.As(&m_DXGIAdapter);
-		// 找到显卡，就创建 D3D12 设备，从高到低遍历所有功能版本，创建成功就跳出
-		for (const auto& level : dx12SupportLevel)
-		{
-			// 创建 D3D12 核心层设备，创建成功就返回 true
-			if (SUCCEEDED(D3D12CreateDevice(m_DXGIAdapter.Get(), level, IID_PPV_ARGS(&m_D3D12Device))))
-			{
-				return true;
-			}
-		}
-	}
-
-	// 如果找不到任何能支持 DX12 的显卡，就退出程序
-	if (m_D3D12Device == nullptr)
-	{
-		MessageBox(
-			NULL,
-			L"No DirectX 12-compatible graphics card was found. Please upgrade your system hardware.",
-			L"Error",
-			MB_OK | MB_ICONERROR
-		);
-
+	//m_Device = std::make_unique<Device>();
+	if (!m_Device->IsInitialized())
 		return false;
-	}
 
+	return true;
 }
 
 void DX12Engine::CreateCommandComponents()
@@ -90,12 +31,12 @@ void DX12Engine::CreateCommandComponents()
 	// D3D12_COMMAND_LIST_TYPE_DIRECT 表示将命令都直接放进队列里，不做其他处理
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 
-	m_D3D12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CommandQueue));
+	m_Device->GetDevice()->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CommandQueue));
 	
 	// 创建命令分配器，它的作用是开辟内存，存储命令列表上的命令，注意命令类型要一致
-	m_D3D12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator));
+	m_Device->GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator));
 
-	m_D3D12Device->CreateCommandList(0,
+	m_Device->GetDevice()->CreateCommandList(0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
 		m_CommandAllocator.Get(),
 		nullptr,
@@ -111,7 +52,7 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 	RTVHeapDesc.NumDescriptors = FrameCount;
 	RTVHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 
-	m_D3D12Device->CreateDescriptorHeap(&RTVHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
+	m_Device->GetDevice()->CreateDescriptorHeap(&RTVHeapDesc, IID_PPV_ARGS(&m_RTVHeap));
 
 	DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
 	swapchainDesc.BufferCount = FrameCount;
@@ -124,7 +65,7 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 
 	ComPtr<IDXGISwapChain1> temp_SwapChain;
 
-	m_DXGIFactory->CreateSwapChainForHwnd(m_CommandQueue.Get(),
+	m_Device->GetFactory()->CreateSwapChainForHwnd(m_CommandQueue.Get(),
 		hwnd,
 		&swapchainDesc,
 		nullptr,
@@ -136,13 +77,13 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 
 	RTVHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
 
-	RTVDescriptionSize = m_D3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	RTVDescriptionSize = m_Device->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 	for (UINT i = 0;i < FrameCount;i++)
 	{
 		m_DXGISwapChain->GetBuffer(i, IID_PPV_ARGS(&m_RenderTarget[i]));
 
-		m_D3D12Device->CreateRenderTargetView(m_RenderTarget[i].Get(), nullptr, RTVHandle);
+		m_Device->GetDevice()->CreateRenderTargetView(m_RenderTarget[i].Get(), nullptr, RTVHandle);
 
 		RTVHandle.ptr += RTVDescriptionSize;
 	}
@@ -153,7 +94,7 @@ void DX12Engine::CreateFenceAndBarrier()
 {
 	RenderEvent = CreateEvent(nullptr, false, true, nullptr);
 
-	m_D3D12Device->CreateFence(0,
+	m_Device->GetDevice()->CreateFence(0,
 		D3D12_FENCE_FLAG_NONE,
 		IID_PPV_ARGS(&m_Fence)
 	);
@@ -177,9 +118,9 @@ void DX12Engine::CreatePipeline()
 	CopyTextureDataToDefaultResource();
 	CreateSRV();
 
-	m_Pipeline.CreateRootSignature(m_D3D12Device.Get());
-	m_Pipeline.CreatePSO(m_D3D12Device.Get(), rtvFormat);
-	m_Pipeline.CreateVertexResource(m_D3D12Device.Get(),WindowWidth,WindowHeight);
+	m_Pipeline.CreateRootSignature(m_Device->GetDevice());
+	m_Pipeline.CreatePSO(m_Device->GetDevice(), rtvFormat);
+	m_Pipeline.CreateVertexResource(m_Device->GetDevice(),WindowWidth,WindowHeight);
 	
 	
 }
@@ -192,7 +133,7 @@ void DX12Engine::CreateSRVHeap()
 	SRVHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	SRVHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
-	m_D3D12Device->CreateDescriptorHeap(&SRVHeapDesc, IID_PPV_ARGS(&m_SRVHeap));
+	m_Device->GetDevice()->CreateDescriptorHeap(&SRVHeapDesc, IID_PPV_ARGS(&m_SRVHeap));
 
 }
 
@@ -211,7 +152,7 @@ void DX12Engine::CreateUploadAndDefaultResource()
 
 	D3D12_HEAP_PROPERTIES UploadHeapDesc = { D3D12_HEAP_TYPE_UPLOAD };
 
-	m_D3D12Device->CreateCommittedResource(&UploadHeapDesc,
+	m_Device->GetDevice()->CreateCommittedResource(&UploadHeapDesc,
 		D3D12_HEAP_FLAG_NONE,
 		&UploadResourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
@@ -231,7 +172,7 @@ void DX12Engine::CreateUploadAndDefaultResource()
 
 	D3D12_HEAP_PROPERTIES DefaultHeapDesc = { D3D12_HEAP_TYPE_DEFAULT };
 
-	m_D3D12Device->CreateCommittedResource(&DefaultHeapDesc,
+	m_Device->GetDevice()->CreateCommittedResource(&DefaultHeapDesc,
 		D3D12_HEAP_FLAG_NONE,
 		&DefaultResourceDesc,
 		D3D12_RESOURCE_STATE_COPY_DEST,
@@ -273,7 +214,7 @@ void DX12Engine::CopyTextureDataToDefaultResource()
 	D3D12_PLACED_SUBRESOURCE_FOOTPRINT PlacedFootprint = {};
 	D3D12_RESOURCE_DESC DefaultResourceDesc = m_DefaultTextureResource->GetDesc();
 
-	m_D3D12Device->GetCopyableFootprints(&DefaultResourceDesc,
+	m_Device->GetDevice()->GetCopyableFootprints(&DefaultResourceDesc,
 		0,
 		1,
 		0,
@@ -327,7 +268,7 @@ void DX12Engine::CreateSRV()
 
 	SRV_CPUHandle = m_SRVHeap->GetCPUDescriptorHandleForHeapStart();
 
-	m_D3D12Device->CreateShaderResourceView(m_DefaultTextureResource.Get(),
+	m_Device->GetDevice()->CreateShaderResourceView(m_DefaultTextureResource.Get(),
 		&SRVDescriptorDesc,
 		SRV_CPUHandle);
 	SRV_GPUHandle = m_SRVHeap->GetGPUDescriptorHandleForHeapStart();

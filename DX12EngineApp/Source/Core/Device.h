@@ -16,10 +16,10 @@ public:
 	Device();
 	~Device() = default;
 
-	IDXGIFactory7* GetFactory() const { return m_Factory.Get(); }
-	IDXGIAdapter4* GetAdapter() const { return m_Adapter.Get(); }
-	ID3D12Device14* GetDevice() const { return m_Device.Get(); }
-
+	IDXGIFactory7* GetFactory()  { return m_Factory.Get(); }
+	IDXGIAdapter4* GetAdapter()  { return m_Adapter.Get(); }
+	ID3D12Device14* GetDevice()  { return m_Device.Get(); }
+	bool IsInitialized() { return m_Device != nullptr; }
 
 };
 

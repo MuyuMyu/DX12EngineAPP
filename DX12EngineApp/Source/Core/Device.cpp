@@ -6,15 +6,22 @@ Device::Device()
 
 #if defined(_DEBUG)		// 如果是 Debug 模式下编译，就执行下面的代码
 
-	// 获取调试层设备接口
-	D3D12GetDebugInterface(IID_PPV_ARGS(&m_DebugDevice));
-	// 开启调试层
-	m_DebugDevice->EnableDebugLayer();
-	// 开启调试层后，创建 DXGI 工厂也需要 Debug Flag
-	m_DXGICreateFactoryFlag = DXGI_CREATE_FACTORY_DEBUG;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&m_DebugDevice))))
+	{
+		m_DebugDevice->EnableDebugLayer();
+		// 可选：开启 GPU 验证（强烈推荐调试时打开）
+		// m_DebugDevice->SetEnableGPUBasedValidation(TRUE);
+
+		m_DXGICreateFactoryFlag = DXGI_CREATE_FACTORY_DEBUG;
+	}
 #endif
 
-	CreateDXGIFactory2(m_DXGICreateFactoryFlag, IID_PPV_ARGS(&m_Factory));
+	// 检查 Factory 创建是否成功
+	if (FAILED(CreateDXGIFactory2(m_DXGICreateFactoryFlag, IID_PPV_ARGS(&m_Factory))))
+	{
+		// Factory 创建失败，几乎不可能，但保险起见
+		return;
+	}
 
 	const D3D_FEATURE_LEVEL dx12SupportLevel[] =
 	{
@@ -26,21 +33,26 @@ Device::Device()
 	};
 
 	Microsoft::WRL::ComPtr<IDXGIAdapter1> _tem_Adpater;
-	for (UINT i = 0; m_Factory->EnumAdapters1(i, _tem_Adpater.GetAddressOf()) != ERROR_NOT_FOUND; i++)
+	bool deviceCreated = false;
+
+	for (UINT i = 0; m_Factory->EnumAdapters1(i, &_tem_Adpater) != ERROR_NOT_FOUND; i++)
 	{
-		_tem_Adpater.As(&m_Adapter);
+		
 		for (const auto& level : dx12SupportLevel)
 		{
-			if (SUCCEEDED(D3D12CreateDevice(m_Adapter.Get(), 
+			if (SUCCEEDED(D3D12CreateDevice(_tem_Adpater.Get(),
 				level, 
 				IID_PPV_ARGS(&m_Device))))
 			{
-				break;
+				_tem_Adpater.As(&m_Adapter);
+				deviceCreated = true;
+				goto device_created;
 			}
 		}
 	}
 
-	if (m_Device == nullptr)
+device_created:
+	if (!deviceCreated)
 	{
 		MessageBox(
 			NULL,
@@ -48,8 +60,7 @@ Device::Device()
 			L"Error",
 			MB_OK | MB_ICONERROR
 		);
-
-		return;
 	}
 
 }
+
