@@ -3,7 +3,8 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
-#include "./Render/RenderPipeline.h"
+#include "../Core/Device.h"
+#include "../Render/RenderPipeline.h"
 
 using namespace Microsoft;
 using namespace Microsoft::WRL;

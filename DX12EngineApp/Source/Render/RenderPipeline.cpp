@@ -1,6 +1,6 @@
-#include "../../stdafx.h"
+#include "../stdafx.h"
 #include "RenderPipeline.h"
-#include "../../Util/Resource/TextureResourceUtil.h"
+#include "../Util/Resource/TextureResourceUtil.h"
 
 using namespace DX12EngineUtils;
 void RenderPipeline::CreateRootSignature(ID3D12Device* device)

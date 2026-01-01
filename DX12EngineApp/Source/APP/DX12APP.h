@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include "../Engine/DX12Engine.h"
 
 using namespace Microsoft;
 using namespace Microsoft::WRL;
