@@ -1,11 +1,8 @@
 #pragma once
 
-#include <wrl.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <memory>
-#include "../Core/Device.h"
+#include "../Core/DX12Device.h"
 #include "../Render/RenderPipeline.h"
+#include "../Config/EngineConfig.h"
 
 class Device;
 
@@ -18,15 +15,12 @@ private:
 	int WindowWidth = 640;		// 窗口宽度
 	int WindowHeight = 480;		// 窗口高度
 
-	static const uint32_t FrameCount = 3;
-	static const DXGI_FORMAT rtvFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-	std::unique_ptr<Device> m_Device;
+	std::unique_ptr<DX12Device> m_Device;
 
 	//命令组件
-	ComPtr<ID3D12CommandQueue> m_CommandQueue;
 	ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
 	ComPtr<ID3D12GraphicsCommandList10> m_CommandList;
+	
 
 	//资源与交换链
 	ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
@@ -34,7 +28,7 @@ private:
 
 	ComPtr<IDXGISwapChain4> m_DXGISwapChain;
 
-	ComPtr<ID3D12Resource> m_RenderTarget[3];
+	ComPtr<ID3D12Resource> m_RenderTarget[FrameCount];
 	D3D12_CPU_DESCRIPTOR_HANDLE RTVHandle;
 	UINT RTVDescriptionSize = 0;
 	UINT FrameIndex = 0;
@@ -46,9 +40,6 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE SRV_GPUHandle;
 
 	//围栏与资源屏障
-	ComPtr<ID3D12Fence1> m_Fence;
-	UINT FenceValue = 0;
-	HANDLE RenderEvent = NULL;
 	D3D12_RESOURCE_BARRIER beg_barrier = {};
 	D3D12_RESOURCE_BARRIER end_barrier = {};
 
@@ -56,9 +47,9 @@ private:
 
 public:
 	DX12Engine();
-	~DX12Engine() = default;
+	~DX12Engine();
 
-	HANDLE GetRenderEvent() const { return RenderEvent; }
+	HANDLE GetRenderEvent(EQueueType type) const { return m_Device->GetCommandQueue(type)->GetEventHandle(); }
 
 public:
 

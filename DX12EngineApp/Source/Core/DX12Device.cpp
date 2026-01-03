@@ -1,6 +1,7 @@
-#include "Device.h"
+#include "DX12Device.h"
+#include "../stdafx.h"
 
-Device::Device()
+DX12Device::DX12Device()
 {
 	::CoInitialize(nullptr);
 
@@ -62,5 +63,18 @@ device_created:
 		);
 	}
 
+	for (size_t i = 0; i < static_cast<size_t>(EQueueType::Count); i++)
+	{
+		auto type = static_cast<EQueueType>(i);
+		m_CommandQueues[i] = std::make_unique<DX12CommandQueue>(m_Device.Get(),type);
+	}
+}
+
+void DX12Device::Flush()
+{
+	for (auto& queue : m_CommandQueues)
+	{
+		queue->Flush();
+	}
 }
 

@@ -42,7 +42,13 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Core\Device.cpp">
+    <ClCompile Include="Source\Core\DX12Device.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\DX12CommandQueue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Core\DX12CommandContext.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,7 +86,19 @@
     <ClInclude Include="ImGui\imstb_truetype.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Core\Device.h">
+    <ClInclude Include="Source\Core\DX12Device.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Config\EngineConfig.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DX12CommandQueue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DX12Queue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DX12CommandContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

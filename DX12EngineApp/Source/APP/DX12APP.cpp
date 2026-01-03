@@ -49,7 +49,7 @@ void DX12APP::RenderLoop()
 
 	while (!isExited)
 	{
-		HANDLE RenderEvent = engine.GetRenderEvent();
+		HANDLE RenderEvent = engine.GetRenderEvent(EQueueType::Direct);
 
 		DWORD ActiveEvent = MsgWaitForMultipleObjects(1,
 			&RenderEvent,

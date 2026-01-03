@@ -5,8 +5,16 @@ using namespace DirectX;
 
 
 DX12Engine::DX12Engine():
-	m_Device(std::make_unique<Device>())
+	m_Device(std::make_unique<DX12Device>())
 {
+}
+
+DX12Engine::~DX12Engine()
+{
+	if (m_Device)
+	{
+		m_Device->Flush();
+	}
 }
 
 void DX12Engine::InitWindowSize(int w, int h)
@@ -17,7 +25,6 @@ void DX12Engine::InitWindowSize(int w, int h)
 
 bool DX12Engine::Initialize(HWND hwnd)
 {
-	//m_Device = std::make_unique<Device>();
 	if (!m_Device->IsInitialized())
 		return false;
 
@@ -26,12 +33,6 @@ bool DX12Engine::Initialize(HWND hwnd)
 
 void DX12Engine::CreateCommandComponents()
 {
-	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
-
-	// D3D12_COMMAND_LIST_TYPE_DIRECT 表示将命令都直接放进队列里，不做其他处理
-	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-
-	m_Device->GetDevice()->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&m_CommandQueue));
 	
 	// 创建命令分配器，它的作用是开辟内存，存储命令列表上的命令，注意命令类型要一致
 	m_Device->GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator));
@@ -58,14 +59,14 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 	swapchainDesc.BufferCount = FrameCount;
 	swapchainDesc.Width = WindowWidth;
 	swapchainDesc.Height = WindowHeight;
-	swapchainDesc.Format = rtvFormat;
+	swapchainDesc.Format = BackBufferFormat;
 	swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	swapchainDesc.SampleDesc.Count = 1;
 
 	ComPtr<IDXGISwapChain1> temp_SwapChain;
 
-	m_Device->GetFactory()->CreateSwapChainForHwnd(m_CommandQueue.Get(),
+	m_Device->GetFactory()->CreateSwapChainForHwnd(m_Device->GetCommandQueue(EQueueType::Direct)->GetNative(),
 		hwnd,
 		&swapchainDesc,
 		nullptr,
@@ -92,14 +93,6 @@ void DX12Engine::CreateRenderTarget(HWND hwnd)
 
 void DX12Engine::CreateFenceAndBarrier()
 {
-	RenderEvent = CreateEvent(nullptr, false, true, nullptr);
-
-	m_Device->GetDevice()->CreateFence(0,
-		D3D12_FENCE_FLAG_NONE,
-		IID_PPV_ARGS(&m_Fence)
-	);
-
-
 
 	beg_barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	beg_barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
@@ -119,7 +112,7 @@ void DX12Engine::CreatePipeline()
 	CreateSRV();
 
 	m_Pipeline.CreateRootSignature(m_Device->GetDevice());
-	m_Pipeline.CreatePSO(m_Device->GetDevice(), rtvFormat);
+	m_Pipeline.CreatePSO(m_Device->GetDevice(), BackBufferFormat);
 	m_Pipeline.CreateVertexResource(m_Device->GetDevice(),WindowWidth,WindowHeight);
 	
 	
@@ -247,13 +240,17 @@ void DX12Engine::CopyTextureDataToDefaultResource()
 
 	ID3D12CommandList* _temp_cmdlists[] = { m_CommandList.Get() };
 
-	m_CommandQueue->ExecuteCommandLists(1, _temp_cmdlists);
+	m_Device->GetCommandQueue(EQueueType::Direct)->Excute(1, _temp_cmdlists);
+	m_Device->GetCommandQueue(EQueueType::Direct)->WaitForFence(
+			m_Device->
+			GetCommandQueue(EQueueType::Direct)
+			->GetCompletedFenceValue());
 
-	FenceValue++;
+	//FenceValue++;
 
-	m_CommandQueue->Signal(m_Fence.Get(), FenceValue);
+	//m_CommandQueue->Signal(m_Fence.Get(), FenceValue);
 
-	m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
+	//m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
 
 }
 
@@ -320,17 +317,15 @@ void DX12Engine::Render()
 	// 用于传递命令用的临时 ID3D12CommandList 数组
 	ID3D12CommandList* _temp_cmdlists[] = { m_CommandList.Get() };
 
-	m_CommandQueue->ExecuteCommandLists(1, _temp_cmdlists);
+	m_Device->GetCommandQueue(EQueueType::Direct)->Excute(1, _temp_cmdlists);
 
 	m_DXGISwapChain->Present(1, NULL);
 
-	FenceValue++;
+	m_Device->GetCommandQueue(EQueueType::Direct)->WaitForFence(
+		m_Device->
+		GetCommandQueue(EQueueType::Direct)
+		->GetCompletedFenceValue());
 
-	m_CommandQueue->Signal(m_Fence.Get(), FenceValue);
-
-	m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
-
-	
 }
 
 
