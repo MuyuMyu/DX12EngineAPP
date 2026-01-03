@@ -1,10 +1,9 @@
 #pragma once
 
-#include "../Core/DX12Device.h"
 #include "../Render/RenderPipeline.h"
 #include "../Config/EngineConfig.h"
+#include "../Core/DX12CommandContext.h"
 
-class Device;
 
 using namespace Microsoft;
 using namespace Microsoft::WRL;
@@ -16,11 +15,7 @@ private:
 	int WindowHeight = 480;		// 窗口高度
 
 	std::unique_ptr<DX12Device> m_Device;
-
-	//命令组件
-	ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
-	ComPtr<ID3D12GraphicsCommandList10> m_CommandList;
-	
+	std::unique_ptr<DX12CommandContext> m_CommandContext;
 
 	//资源与交换链
 	ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
@@ -56,8 +51,6 @@ public:
 	void InitWindowSize(int w, int h);
 
 	bool Initialize(HWND hwnd);
-
-	void CreateCommandComponents();
 
 	void CreateRenderTarget(HWND hwnd);
 

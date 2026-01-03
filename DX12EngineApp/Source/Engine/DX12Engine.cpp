@@ -7,6 +7,16 @@ using namespace DirectX;
 DX12Engine::DX12Engine():
 	m_Device(std::make_unique<DX12Device>())
 {
+	m_CommandContext = std::make_unique<DX12CommandContext>();
+	if (!m_CommandContext->Initialize(m_Device.get(), EQueueType::Direct))
+	{
+		MessageBox(
+			NULL,
+			L"CommandList or CommandAllocator Init Failed!",
+			L"Error",
+			MB_OK | MB_ICONERROR
+		);
+	}
 }
 
 DX12Engine::~DX12Engine()
@@ -29,22 +39,6 @@ bool DX12Engine::Initialize(HWND hwnd)
 		return false;
 
 	return true;
-}
-
-void DX12Engine::CreateCommandComponents()
-{
-	
-	// 创建命令分配器，它的作用是开辟内存，存储命令列表上的命令，注意命令类型要一致
-	m_Device->GetDevice()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_CommandAllocator));
-
-	m_Device->GetDevice()->CreateCommandList(0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		m_CommandAllocator.Get(),
-		nullptr,
-		IID_PPV_ARGS(&m_CommandList)
-	);
-
-	m_CommandList->Close();
 }
 
 void DX12Engine::CreateRenderTarget(HWND hwnd)
@@ -226,32 +220,17 @@ void DX12Engine::CopyTextureDataToDefaultResource()
 	SrcLocation.PlacedFootprint = PlacedFootprint;
 	SrcLocation.pResource = m_UploadTextureResource.Get();
 
-	m_CommandAllocator->Reset();
-	m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
+	m_CommandContext->Reset();
 
-	m_CommandList->CopyTextureRegion(&DstLocation,
+	m_CommandContext->GetCommandList()->CopyTextureRegion(&DstLocation,
 		0,
 		0,
 		0,
 		&SrcLocation,
 		nullptr);
 
-	m_CommandList->Close();
-
-	ID3D12CommandList* _temp_cmdlists[] = { m_CommandList.Get() };
-
-	m_Device->GetCommandQueue(EQueueType::Direct)->Excute(1, _temp_cmdlists);
-	m_Device->GetCommandQueue(EQueueType::Direct)->WaitForFence(
-			m_Device->
-			GetCommandQueue(EQueueType::Direct)
-			->GetCompletedFenceValue());
-
-	//FenceValue++;
-
-	//m_CommandQueue->Signal(m_Fence.Get(), FenceValue);
-
-	//m_Fence->SetEventOnCompletion(FenceValue, RenderEvent);
-
+	m_CommandContext->Close();
+	m_CommandContext->ExcuteAndWait();
 }
 
 void DX12Engine::CreateSRV()
@@ -279,53 +258,41 @@ void DX12Engine::Render()
 
 	RTVHandle.ptr += FrameIndex * RTVDescriptionSize;
 
-	m_CommandAllocator->Reset();
-
-	
-	m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
+	m_CommandContext->Reset();
+	auto cmdList = m_CommandContext->GetCommandList();
 
 	beg_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
 
-	m_CommandList->ResourceBarrier(1, &beg_barrier);
+	cmdList->ResourceBarrier(1, &beg_barrier);
 
-	m_CommandList->SetGraphicsRootSignature(m_Pipeline.GetRootSignature());
-	m_CommandList->SetPipelineState(m_Pipeline.GetPSO());
+	cmdList->SetGraphicsRootSignature(m_Pipeline.GetRootSignature());
+	cmdList->SetPipelineState(m_Pipeline.GetPSO());
 
-	m_CommandList->RSSetViewports(1, &m_Pipeline.GetViewport());
-	m_CommandList->RSSetScissorRects(1, &m_Pipeline.GetScissorRect());
+	cmdList->RSSetViewports(1, &m_Pipeline.GetViewport());
+	cmdList->RSSetScissorRects(1, &m_Pipeline.GetScissorRect());
 
 	// 用 RTV 句柄设置渲染目标
-	m_CommandList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
+	cmdList->OMSetRenderTargets(1, &RTVHandle, false, nullptr);
 
 	// 清空当前渲染目标的背景为天蓝色
-	m_CommandList->ClearRenderTargetView(RTVHandle, DirectX::Colors::SkyBlue, 0, nullptr);
+	cmdList->ClearRenderTargetView(RTVHandle, DirectX::Colors::SkyBlue, 0, nullptr);
 
-	ID3D12DescriptorHeap* _temp_DescriptorHeap[] = {m_SRVHeap.Get()};
-	m_CommandList->SetDescriptorHeaps(1, _temp_DescriptorHeap);
-	m_CommandList->SetGraphicsRootDescriptorTable(0, SRV_GPUHandle);
+	ID3D12DescriptorHeap* _temp_DescriptorHeap[] = { m_SRVHeap.Get() };
+	cmdList->SetDescriptorHeaps(1, _temp_DescriptorHeap);
+	cmdList->SetGraphicsRootDescriptorTable(0, SRV_GPUHandle);
 
-	m_CommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_CommandList->IASetVertexBuffers(0, 1, &m_Pipeline.GetVBV());
-	m_CommandList->DrawInstanced(6, 1, 0, 0);
+	cmdList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	cmdList->IASetVertexBuffers(0, 1, &m_Pipeline.GetVBV());
+	cmdList->DrawInstanced(6, 1, 0, 0);
 
 	end_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
 
-	m_CommandList->ResourceBarrier(1, &end_barrier);
+	cmdList->ResourceBarrier(1, &end_barrier);
 
-	m_CommandList->Close();
-
-	// 用于传递命令用的临时 ID3D12CommandList 数组
-	ID3D12CommandList* _temp_cmdlists[] = { m_CommandList.Get() };
-
-	m_Device->GetCommandQueue(EQueueType::Direct)->Excute(1, _temp_cmdlists);
+	m_CommandContext->Close();
+	m_CommandContext->ExcuteAndWait();
 
 	m_DXGISwapChain->Present(1, NULL);
-
-	m_Device->GetCommandQueue(EQueueType::Direct)->WaitForFence(
-		m_Device->
-		GetCommandQueue(EQueueType::Direct)
-		->GetCompletedFenceValue());
-
 }
 
 

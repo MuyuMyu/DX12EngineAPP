@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\DX12FrameContext.cpp" />
     <ClCompile Include="Source\Core\DX12CommandContext.cpp" />
     <ClCompile Include="Source\Core\DX12CommandQueue.cpp" />
     <ClCompile Include="Source\Core\DX12Device.cpp" />
@@ -78,6 +79,7 @@
     <ClCompile Include="Source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Core\DX12FrameContext.h" />
     <ClInclude Include="Source\Core\DX12CommandContext.h" />
     <ClInclude Include="Source\Core\DX12CommandQueue.h" />
     <ClInclude Include="Source\Config\EngineConfig.h" />

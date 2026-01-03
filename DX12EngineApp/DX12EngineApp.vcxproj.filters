@@ -51,6 +51,9 @@
     <ClCompile Include="Source\Core\DX12CommandContext.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Core\DX12FrameContext.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\stdafx.h">
@@ -99,6 +102,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Source\Core\DX12CommandContext.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Core\DX12FrameContext.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

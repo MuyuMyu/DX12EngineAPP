@@ -49,12 +49,11 @@ UINT DX12CommandQueue::Signal()
 	return fenceValue;
 }
 
-UINT DX12CommandQueue::Excute(UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists)
+void DX12CommandQueue::Excute(UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists)
 {
 
 	m_Queue->ExecuteCommandLists(NumCommandLists, ppCommandLists);
 
-	return Signal();
 }
 
 void DX12CommandQueue::Wait(DX12CommandQueue& otherQueue, UINT fenceValue)

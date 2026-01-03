@@ -25,12 +25,13 @@ public:
 	ID3D12CommandQueue* GetNative() const { return m_Queue.Get(); }
 	EQueueType GetType() const { return m_type; }
 	HANDLE GetEventHandle() { return m_FenceEvent; }
+	UINT GetNextFenceValue() { return NextFenceValue; }
 
 	bool IsInitialized() { return m_Queue != nullptr; }
 
 	UINT Signal();
 
-	UINT Excute(UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists);
+	void Excute(UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists);
 
 	void Wait(DX12CommandQueue& otherQueue, UINT fenceValue);
 

@@ -35,7 +35,6 @@ void DX12APP::InitDX12()
 	engine.InitWindowSize(WindowWidth, WindowHeight);
 	if (!engine.Initialize(m_hwnd))
 		return;
-	engine.CreateCommandComponents();
 	engine.CreateRenderTarget(m_hwnd);
 	engine.CreateFenceAndBarrier();
 	engine.CreatePipeline();
