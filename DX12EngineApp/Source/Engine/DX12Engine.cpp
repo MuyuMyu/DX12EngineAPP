@@ -7,6 +7,11 @@ using namespace DirectX;
 DX12Engine::DX12Engine():
 	m_Device(std::make_unique<DX12Device>())
 {
+	for (int i = 0; i < FrameCount; i++)
+	{
+		m_FrameContex[i] = std::make_unique<DX12FrameContext>(m_Device.get());
+	}
+
 	m_CommandContext = std::make_unique<DX12CommandContext>();
 	if (!m_CommandContext->Initialize(m_Device.get(), EQueueType::Direct))
 	{
@@ -27,14 +32,10 @@ DX12Engine::~DX12Engine()
 	}
 }
 
-void DX12Engine::InitWindowSize(int w, int h)
+bool DX12Engine::Initialize(HWND hwnd, int w, int h)
 {
 	WindowWidth = w;
 	WindowHeight = h;
-}
-
-bool DX12Engine::Initialize(HWND hwnd)
-{
 	if (!m_Device->IsInitialized())
 		return false;
 
@@ -231,6 +232,7 @@ void DX12Engine::CopyTextureDataToDefaultResource()
 
 	m_CommandContext->Close();
 	m_CommandContext->ExcuteAndWait();
+
 }
 
 void DX12Engine::CreateSRV()
@@ -252,16 +254,18 @@ void DX12Engine::CreateSRV()
 
 void DX12Engine::Render()
 {
+	DX12FrameContext* Frame = m_FrameContex[FrameIndex].get();
+
+	Frame->Begin();
+
 	RTVHandle = m_RTVHeap->GetCPUDescriptorHandleForHeapStart();
 
-	FrameIndex = m_DXGISwapChain->GetCurrentBackBufferIndex();
+	UINT backIndex = m_DXGISwapChain->GetCurrentBackBufferIndex();
 
-	RTVHandle.ptr += FrameIndex * RTVDescriptionSize;
-
-	m_CommandContext->Reset();
-	auto cmdList = m_CommandContext->GetCommandList();
-
-	beg_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
+	RTVHandle.ptr += backIndex * RTVDescriptionSize;
+	auto cmdList = Frame->GetGraphicsContext()->GetCommandList();
+	Frame->GetGraphicsContext()->MarkUsed();
+	beg_barrier.Transition.pResource = m_RenderTarget[backIndex].Get();
 
 	cmdList->ResourceBarrier(1, &beg_barrier);
 
@@ -285,14 +289,15 @@ void DX12Engine::Render()
 	cmdList->IASetVertexBuffers(0, 1, &m_Pipeline.GetVBV());
 	cmdList->DrawInstanced(6, 1, 0, 0);
 
-	end_barrier.Transition.pResource = m_RenderTarget[FrameIndex].Get();
+	end_barrier.Transition.pResource = m_RenderTarget[backIndex].Get();
 
 	cmdList->ResourceBarrier(1, &end_barrier);
 
-	m_CommandContext->Close();
-	m_CommandContext->ExcuteAndWait();
+	m_FrameContex[FrameIndex]->End();
 
 	m_DXGISwapChain->Present(1, NULL);
+
+	FrameIndex = (FrameIndex + 1) % FrameCount;
 }
 
 

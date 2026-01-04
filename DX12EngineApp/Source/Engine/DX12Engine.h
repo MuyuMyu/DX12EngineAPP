@@ -3,6 +3,7 @@
 #include "../Render/RenderPipeline.h"
 #include "../Config/EngineConfig.h"
 #include "../Core/DX12CommandContext.h"
+#include "../Core/DX12FrameContext.h"
 
 
 using namespace Microsoft;
@@ -16,6 +17,7 @@ private:
 
 	std::unique_ptr<DX12Device> m_Device;
 	std::unique_ptr<DX12CommandContext> m_CommandContext;
+	std::unique_ptr<DX12FrameContext> m_FrameContex[FrameCount];
 
 	//资源与交换链
 	ComPtr<ID3D12DescriptorHeap> m_RTVHeap;
@@ -48,9 +50,7 @@ public:
 
 public:
 
-	void InitWindowSize(int w, int h);
-
-	bool Initialize(HWND hwnd);
+	bool Initialize(HWND hwnd, int w, int h);
 
 	void CreateRenderTarget(HWND hwnd);
 

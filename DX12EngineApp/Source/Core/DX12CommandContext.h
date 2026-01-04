@@ -22,10 +22,11 @@ public:
 	bool Initialize(DX12Device* device, EQueueType queueType);
 
 	void MarkUsed() { bHasCommands = true; }
+	bool HasCommands() { return bHasCommands; }
 	void Reset();
-	void Excute();
+	UINT Excute();
 	UINT WaitFence();
-	void ExcuteAndWait();
+	UINT ExcuteAndWait();
 	void Close();
 
 };

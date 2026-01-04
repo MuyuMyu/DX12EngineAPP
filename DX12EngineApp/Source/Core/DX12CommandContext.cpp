@@ -34,10 +34,11 @@ void DX12CommandContext::Reset()
 	m_CommandList->Reset(m_CommandAllocator.Get(), nullptr);
 }
 
-void DX12CommandContext::Excute()
+UINT DX12CommandContext::Excute()
 {
 	ID3D12CommandList* Lists[] = { m_CommandList.Get() };
 	m_CommandQueue->Excute(1, Lists);
+	return m_CommandQueue->Signal();
 }
 
 UINT DX12CommandContext::WaitFence()
@@ -48,13 +49,14 @@ UINT DX12CommandContext::WaitFence()
 	return fenceValue;
 }
 
-void DX12CommandContext::ExcuteAndWait()
+UINT DX12CommandContext::ExcuteAndWait()
 {
 	ID3D12CommandList* Lists[] = { m_CommandList.Get() };
 	m_CommandQueue->Excute(1, Lists);
 	const UINT fenceValue = m_CommandQueue->Signal();
 	m_CommandQueue->WaitForFence(fenceValue);
 	 
+	return fenceValue;
 }
 
 void DX12CommandContext::Close()

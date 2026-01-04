@@ -56,9 +56,9 @@ void DX12CommandQueue::Excute(UINT NumCommandLists, ID3D12CommandList* const* pp
 
 }
 
-void DX12CommandQueue::Wait(DX12CommandQueue& otherQueue, UINT fenceValue)
+void DX12CommandQueue::Wait(DX12CommandQueue* otherQueue, UINT fenceValue)
 {
-	m_Queue->Wait(otherQueue.m_Fence.Get(), fenceValue);
+	m_Queue->Wait(otherQueue->m_Fence.Get(), fenceValue);
 }
 
 void DX12CommandQueue::WaitForFence(UINT fenceValue)

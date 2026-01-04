@@ -33,7 +33,7 @@ public:
 
 	void Excute(UINT NumCommandLists, ID3D12CommandList* const* ppCommandLists);
 
-	void Wait(DX12CommandQueue& otherQueue, UINT fenceValue);
+	void Wait(DX12CommandQueue* otherQueue, UINT fenceValue);
 
 	void WaitForFence(UINT fenceValue);
 

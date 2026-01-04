@@ -23,8 +23,23 @@ void DX12FrameContext::Begin()
 
 void DX12FrameContext::End()
 {
-	m_GrapicsContext->Close();
-	m_GrapicsContext->ExcuteAndWait();
+	UINT copyFenceValue = 0;
+	if (m_CopyContext->HasCommands())
+	{
+		m_CopyContext->Close();
+		copyFenceValue =  m_CopyContext->Excute();
 
-	fenceValue = Device->GetCommandQueue(EQueueType::Direct)->Signal();
+	}
+
+	if (m_GrapicsContext->HasCommands())
+	{
+		if (copyFenceValue > 0)
+		{
+			Device->GetCommandQueue(EQueueType::Direct)
+				->Wait(Device->GetCommandQueue(EQueueType::Copy), copyFenceValue);
+		}
+		m_GrapicsContext->Close();
+		fenceValue = m_GrapicsContext->Excute();
+	}
+
 }
